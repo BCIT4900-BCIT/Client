@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/taskTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="16dp"
+        android:text="Task"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/numMins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/taskTextView"
+        android:layout_marginEnd="121dp"
+        android:text="1"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/mins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/taskTextView"
+        android:layout_marginStart="-121dp"
+        android:layout_toEndOf="@+id/numMins"
+        android:text="Min"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/numSecs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/taskTextView"
+        android:layout_toEndOf="@+id/mins"
+        android:text="30"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/numSecs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/taskTextView"
+        android:layout_marginEnd="27dp"
+        android:text="s"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/descTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/taskTextView"
+        android:layout_below="@+id/taskTextView"
+        android:text="Description" />
+</RelativeLayout>
