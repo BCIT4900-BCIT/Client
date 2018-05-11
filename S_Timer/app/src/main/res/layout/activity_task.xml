@@ -59,4 +59,5 @@
         android:layout_alignStart="@+id/taskTextView"
         android:layout_below="@+id/taskTextView"
         android:text="Description" />
+
 </RelativeLayout>

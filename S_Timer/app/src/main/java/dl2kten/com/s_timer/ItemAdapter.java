@@ -1,6 +1,7 @@
 package dl2kten.com.s_timer;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ public class ItemAdapter extends BaseAdapter {
     private String[] minutes;
     private String[] seconds;
     private String[] descriptions;
+    private Boolean[] initiated;
 
     /**
      * Constructor to initialize variables
@@ -23,11 +25,12 @@ public class ItemAdapter extends BaseAdapter {
      * @param desc
      */
     public ItemAdapter(Context c, String[] tasks, String[] mins,
-                       String[] secs, String[] desc) {
+                       String[] secs, String[] desc, Boolean[] initiated) {
         this.tasks = tasks;
         this.minutes = mins;
         this.seconds = secs;
         this.descriptions = desc;
+        this.initiated = initiated;
         //to fill in values for the task activity
         mInflater = (LayoutInflater) c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -66,6 +69,7 @@ public class ItemAdapter extends BaseAdapter {
         String mins = "";
         String secs = "";
         String specificDesc = descriptions[position];
+        Boolean ini = initiated[position];
 
         if(Integer.parseInt(minutes[position]) < 10)
             mins += "0";
@@ -79,6 +83,12 @@ public class ItemAdapter extends BaseAdapter {
         numMins.setText(mins);
         numSecs.setText(secs);
         desc.setText(specificDesc);
+
+        if(ini) {
+            v.setBackgroundColor(Color.RED);
+        } else {
+            v.setBackgroundColor(Color.GREEN);
+        }
 
         return v;
     }
