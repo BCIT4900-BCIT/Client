@@ -53,11 +53,35 @@
         android:textSize="28sp" />
 
     <TextView
-        android:id="@+id/descTextView"
+        android:id="@+id/promptTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/taskTextView"
         android:layout_below="@+id/taskTextView"
-        android:text="Description" />
+        android:text="Try to get it done between: " />
+
+    <TextView
+        android:id="@+id/startTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/taskTextView"
+        android:layout_toEndOf="@+id/promptTextView"
+        android:text="7:00" />
+
+    <TextView
+        android:id="@+id/hyphenTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/promptTextView"
+        android:layout_toEndOf="@+id/startTextView"
+        android:text=" - " />
+
+    <TextView
+        android:id="@+id/endTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/taskTextView"
+        android:layout_toEndOf="@+id/hyphenTextView"
+        android:text="7:05" />
 
 </RelativeLayout>

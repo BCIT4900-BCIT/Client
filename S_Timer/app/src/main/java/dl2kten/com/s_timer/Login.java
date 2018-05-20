@@ -1,7 +1,9 @@
 package dl2kten.com.s_timer;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -12,21 +14,32 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 
 public class Login extends AppCompatActivity {
 
     private EditText emailEditText, passwordEditText;
     private Button loginBtn;
-    private ProgressBar progressBar;
+    private String email, password, dataTasks, dataStart, dataEnd, dataAlarm;
     private static final String MyPREFERENCES = "MyPrefs";
+    private static final String MYID = "MyID";
     private static final String KEY_EMAIL = "key_email";
     private static final String KEY_PASSWORD = "key_password";
     private static final String KEY_TASK = "key_task";
-    private static final String KEY_DESC = "key_desc";
-    private static final String KEY_MINUTES = "key_minutes";
-    private static final String KEY_SECONDS = "key_seconds";
+    private static final String KEY_STARTTIME = "key_startTime";
+    private static final String KEY_ENDTIME = "key_endTime";
+    private static final String KEY_LOGGEDON = "key_loggedOn";
+    private static final String KEY_ALARM = "key_alarm";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +56,35 @@ public class Login extends AppCompatActivity {
                 loginUser();
             }
         });
+
+    }
+
+    /**
+     *
+     * @param view
+     */
+    public void onRadioButtonClicked(View view){
+        boolean checked = ((RadioButton)view).isChecked();
+
+        switch(view.getId()) {
+            case R.id.parentRadioBtn:
+                if(checked)
+                    System.out.println("");
+                break;
+
+            case R.id.childRadioBtn:
+                if(checked)
+                    System.out.println("");
+                break;
+        }
     }
 
     /**
      *  Checks whether fields are empty and stores value in sharedPreferences
      */
     private void loginUser() {
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
+        email = emailEditText.getText().toString().trim();
+        password = passwordEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(email)) {
             emailEditText.setError("Please Enter Email");
@@ -64,49 +98,100 @@ public class Login extends AppCompatActivity {
             return;
         }
 
-        SharedPreferences sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences prefs = getSharedPreferences(MyPREFERENCES,
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor2 = prefs.edit();
 
-        editor.remove(MyPREFERENCES);
-        editor.clear();
-        editor.commit();
+        editor2.remove(MyPREFERENCES);
+        editor2.clear();
+        editor2.commit();
 
-        editor.putString(KEY_EMAIL, email);
-        editor.putString(KEY_PASSWORD, password);
-        editor.putString(KEY_TASK, "Brush Teeth, Wash Face, Eat Breakfast, Get Dressed," +
-                "Pack Backpack, Check Homework");
-        editor.putString(KEY_DESC, "Brush Teeth with tooth brush..., Throughly wash face, Eat Breakfast," +
-                "Get dressed for school, Put everything needed inside backpack, Check Homework");
-        editor.putString(KEY_MINUTES, "3, 2, 10, 5, 0, 1");
-        editor.putString(KEY_SECONDS, "15, 30, 0, 45, 45, 0");
-        editor.commit();
+        String result = "";
 
-        new PullData().execute(1);
-        startActivity(new Intent(this, MainActivity.class));
+        try {
+            result = new PullData().execute(0).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+        if(result.equals("pass")) {
+            SharedPreferences idPrefs = getSharedPreferences(MYID, Context.MODE_PRIVATE);
+            SharedPreferences.Editor idEditor = idPrefs.edit();
+
+            idEditor.putString(KEY_EMAIL, email);
+            idEditor.putString(KEY_PASSWORD, password);
+            idEditor.putString(KEY_LOGGEDON, "true");
+            idEditor.commit();
+
+            SharedPreferences sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+            editor.putString(KEY_TASK, dataTasks);
+            editor.putString(KEY_STARTTIME, dataStart);
+            editor.putString(KEY_ENDTIME, dataEnd);
+            editor.putString(KEY_ALARM, dataAlarm);
+            editor.commit();
+
+            startActivity(new Intent(this, MainActivity.class));
+        } else {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("Failed User Authentication");
+            alertDialogBuilder.setMessage("Wrong Email or Wrong Pasword")
+                    .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                            finish();
+                            startActivity(getIntent());
+                        }
+                    });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
     }
 
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
     /**
      *
      */
     private class PullData extends AsyncTask<Integer, Integer, String> {
-        ProgressDialog progressDialog;
 
         @Override
         protected String doInBackground(Integer... integers) {
 
+            Data data = new Data();
 
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            String msg = data.authenticate(email, password);
+
+            if(msg == null) {
+                msg = "";
             }
 
-            return "Done";
+            if(msg.equals("pass")) {
+                String result = data.pullData(email);
+
+                data.parseJSON(result);
+
+                dataTasks = data.getTasks();
+                dataStart = data.getStartTimes();
+                dataEnd = data.getEndTimes();
+                dataAlarm = data.getAlarm();
+
+                return "pass";
+            } else {
+                return "fail";
+            }
+
         }
 
         protected void onPreExecute() {
-            progressDialog = ProgressDialog.show(Login.this, "Progress Dialog",
-                    "Depreciated?");
         }
 
         @Override
@@ -116,7 +201,7 @@ public class Login extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            progressDialog.dismiss();
+
             cancel(true);
         }
     }

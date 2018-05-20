@@ -43,14 +43,17 @@ public class CountDOWN extends AppCompatActivity {
         Intent in = getIntent();
         task = in.getParcelableExtra("dl2kten.com.s_timer.task");
 
+        //Keeps track of time in background in case nagivate away from activity
         trackTimer = new TrackTimer();
 
         timeLeft = 0;
         runTimer = true;
 
+        //check to see if a task is already started
         Boolean running = prefs.getBoolean(KEY_ASYNCTIMERSTART, false);
 
         if(!running) {
+            //if haven't started timer set how much time is on timer
             getTime(task);
         } else {
             timeLeft = prefs.getInt(KEY_TIMELEFT, 0);
@@ -84,6 +87,8 @@ public class CountDOWN extends AppCompatActivity {
                     Intent finished = new Intent(getApplicationContext(), TryAgain.class);
                     startActivity(finished);
                 }
+
+                countDownTimer.cancel();
             }
         });
     }
@@ -95,7 +100,7 @@ public class CountDOWN extends AppCompatActivity {
 
         Boolean track = prefs.getBoolean(KEY_ASYNCTIMERSTART, false);
 
-        if(!track) {
+        if(!track || trackTimer.getStatus() != AsyncTask.Status.RUNNING) {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean(KEY_ASYNCTIMERSTART, true);
             editor.commit();
@@ -139,15 +144,20 @@ public class CountDOWN extends AppCompatActivity {
      * Updates textview with count down
      */
     private void updateTimer() {
-        int minutes = (int) timeLeft / 60000;
-        int mod = (int) timeLeft % 60000;
+        int hours = (int) timeLeft / (60000 * 60);
+        int mod = (int) timeLeft % (60000 * 60);
+        int minutes = mod / 60000;
+        mod = mod % 60000;
         int seconds = mod / 1000;
         mod = mod % 1000;
         int ms = mod / 100;
 
-        String timeLeftText;
+        String timeLeftText = "";
 
-        timeLeftText = "" + "0:";
+        if(hours < 10)
+            timeLeftText += "0";
+
+        timeLeftText += hours + ":";
         //adds 0 in front if single digit
         if(minutes < 10)
             timeLeftText += "0";
@@ -169,14 +179,22 @@ public class CountDOWN extends AppCompatActivity {
      */
     private void getTime(Task task) {
         int[][] times= new int[1][2];
-        times[0][0] = Integer.parseInt(task.getMinutes());
-        times[0][1] = Integer.parseInt(task.getSeconds());
+        task.calcDuration();
+        times[0][0] = Integer.parseInt(task.getMins());
+        times[0][1] = Integer.parseInt(task.getSecs());
 
         timeLeft += times[0][0] * 60;
         timeLeft += times[0][1];
         timeLeft *= 1000;
     }
 
+
+    @Override
+    public void onBackPressed() {
+        Intent in = new Intent(this, MainActivity.class);
+        countDownTimer.cancel();
+        startActivity(in);
+    }
     /**
      *
      */
