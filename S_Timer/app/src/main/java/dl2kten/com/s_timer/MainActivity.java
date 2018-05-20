@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     if(running.equals("Huh?") || running.equals("false")
                             || running.equals(Integer.toString(position))) {
                         //Get list of done tasks and add to it
-                        colorCode(parent, position);
+
                         String done = prefs.getString(KEY_DONE, "Huh?");
 
                         if(!done.equals("Huh?")) {
@@ -283,19 +283,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return false;
-    }
-
-    /**
-     * Colors background to delineate tasks done vs not started
-     * @param parent
-     */
-    private void colorCode(AdapterView<?> parent, int position) {
-        int length = parent.getCount();
-        for(int i = 0; i < parent.getCount(); i++) {
-            parent.getChildAt(i).setBackgroundColor(Color.RED);
-        }
-
-        parent.getChildAt(position).setBackgroundColor(Color.GREEN);
     }
 
     /**

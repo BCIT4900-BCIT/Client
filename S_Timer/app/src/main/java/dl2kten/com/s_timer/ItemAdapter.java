@@ -106,7 +106,7 @@ public class ItemAdapter extends BaseAdapter {
             }
         } else {
             if(position == Integer.parseInt(running)) {
-                v.setBackgroundColor(Color.GREEN);
+                v.setBackgroundColor(Color.YELLOW);
             } else {
                 v.setBackgroundColor(Color.RED);
             }

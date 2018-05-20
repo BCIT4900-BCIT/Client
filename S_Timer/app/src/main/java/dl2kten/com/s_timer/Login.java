@@ -60,26 +60,6 @@ public class Login extends AppCompatActivity {
     }
 
     /**
-     *
-     * @param view
-     */
-    public void onRadioButtonClicked(View view){
-        boolean checked = ((RadioButton)view).isChecked();
-
-        switch(view.getId()) {
-            case R.id.parentRadioBtn:
-                if(checked)
-                    System.out.println("");
-                break;
-
-            case R.id.childRadioBtn:
-                if(checked)
-                    System.out.println("");
-                break;
-        }
-    }
-
-    /**
      *  Checks whether fields are empty and stores value in sharedPreferences
      */
     private void loginUser() {
@@ -98,14 +78,13 @@ public class Login extends AppCompatActivity {
             return;
         }
 
-        SharedPreferences prefs = getSharedPreferences(MyPREFERENCES,
-                Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor2 = prefs.edit();
-
+        /*
+        SharedPreferences preferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor2 = preferences.edit();
         editor2.remove(MyPREFERENCES);
         editor2.clear();
         editor2.commit();
-
+*/
         String result = "";
 
         try {
