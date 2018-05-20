@@ -192,7 +192,9 @@ public class CountDOWN extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent in = new Intent(this, MainActivity.class);
-        countDownTimer.cancel();
+        if(countDownTimer != null) {
+            countDownTimer.cancel();
+        }
         startActivity(in);
     }
     /**
