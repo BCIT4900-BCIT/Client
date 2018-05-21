@@ -78,13 +78,13 @@ public class Login extends AppCompatActivity {
             return;
         }
 
-        /*
+
         SharedPreferences preferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor2 = preferences.edit();
         editor2.remove(MyPREFERENCES);
         editor2.clear();
         editor2.commit();
-*/
+
         String result = "";
 
         try {
