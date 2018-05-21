@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private static final Handler updateHandler = new Handler();
     private static final Handler invalidateHandler = new Handler();
     private Runnable r;
+    private boolean syncWithServer;
     private static final String MyPREFERENCES = "MyPrefs";
     private static final String KEY_TASK = "key_task";
     private static final String KEY_DONE = "key_done";
@@ -62,10 +63,7 @@ public class MainActivity extends AppCompatActivity {
         stopAlarmBtn = (Button) findViewById(R.id.stopAlarmButton);
         prefs = getSharedPreferences(MyPREFERENCES, MODE_PRIVATE);
 
-        //was gonna set these flags so update and invalidate would only run once
-        //but couldn't tell if it's running or not
-        String update = prefs.getString(KEY_UPDATE, "Huh?");
-        String invalidate = prefs.getString(KEY_INVALIDATE, "Huh?");
+        syncWithServer = false;
 
         getData();
         showTasks();
@@ -304,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void sync() {
         try {
+            syncWithServer = true;
             new PullData().execute(0).get();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -335,9 +334,16 @@ public class MainActivity extends AppCompatActivity {
                 if(alarmTimes[i].equals("1")) {
                     String[] sections = startTime[i].split(":");
 
-                    calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(sections[0]));
-                    calendar.set(Calendar.MINUTE, Integer.parseInt(sections[0]));
-                    calendar.set(Calendar.SECOND, Integer.parseInt(sections[0]));
+                    int minute = Integer.parseInt(sections[1]);
+                    if(minute == 0) {
+                        minute = 60;
+                        calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(sections[0]) - 1);
+                    } else {
+                        calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(sections[0]));
+                    }
+
+                    calendar.set(Calendar.MINUTE, minute - 1);
+                    calendar.set(Calendar.SECOND, Integer.parseInt(sections[2]));
                     calendar.set(Calendar.MILLISECOND, 0);
 
                     //So that it doesn't start after the set time, before was starting after set time
@@ -557,14 +563,19 @@ public class MainActivity extends AppCompatActivity {
 
             data.parseJSON(result);
 
-            SharedPreferences sharedPreferences = getSharedPreferences(MyPREFERENCES,
-                    Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
+            if(!syncWithServer) {
+                SharedPreferences sharedPreferences = getSharedPreferences(MyPREFERENCES,
+                        Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
 
-            editor.putString(KEY_TASK, data.getTasks());
-            editor.putString(KEY_STARTTIME, data.getStartTimes());
-            editor.putString(KEY_ENDTIME, data.getEndTimes());
-            editor.commit();
+                editor.putString(KEY_TASK, data.getTasks());
+                editor.putString(KEY_STARTTIME, data.getStartTimes());
+                editor.putString(KEY_ENDTIME, data.getEndTimes());
+                editor.commit();
+            } else {
+                processData(data);
+                syncWithServer = false;
+            }
 
             return "pass";
 
@@ -589,46 +600,40 @@ public class MainActivity extends AppCompatActivity {
             String tasks = d.getTasks();
             String startTime = d.getStartTimes();
             String endTime = d.getEndTimes();
+            String alarmTime = d.getAlarm();
             String[] taskStartTimes = startTime.split(",");
             String[] taskEndTimes = endTime.split(",");
             String[] taskTasks = tasks.split(",");
+            String[] taskAlarm = alarmTime.split(",");
             String newEndTimes = "";
             String newStartTimes = "";
             String newTasks = "";
+            String newAlarm = "";
 
-            int[] modifyNewTimes = null;
             int count = 0;
 
             int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
             int minute = Calendar.getInstance().get(Calendar.MINUTE);
 
             if(startTime!=null) {
-                modifyNewTimes = new int[count + 1];//start with 1 and increment if there's more
 
                 for (int i = 0; i < taskStartTimes.length; i++) {
                     //splits 00:00:00 to hour, minute, seconds
                     String[] sections = taskStartTimes[i].split(":");
-                    if (minute < Integer.parseInt(sections[1])) {
-                        if (hour <= Integer.parseInt(sections[0])) {
-                            /*modifyNewTimes[count++] = i;
-                            int[] temp = new int[count + 1];
+                    if (hour < Integer.parseInt(sections[0]) || (hour == Integer.parseInt(sections[0])
+                        && minute < Integer.parseInt(sections[1]))) {
 
-                            for(int j = 0; j < modifyNewTimes.length; j++) {
-                                temp[j] = modifyNewTimes[j];
-                            }
-
-                            modifyNewTimes = temp;
-                            */
                             if(i == 0) {
                                 newStartTimes += taskStartTimes[i];
                                 newEndTimes += taskEndTimes[i];
                                 newTasks += taskTasks[i];
+                                newAlarm += taskAlarm[i];
                             } else {
                                 newStartTimes += "," + taskStartTimes[i];
                                 newEndTimes += "," + taskEndTimes[i];
                                 newTasks += "," + taskTasks[i];
+                                newAlarm += "," + taskAlarm[i];
                             }
-                        }
                     }
                 }
 
@@ -641,45 +646,52 @@ public class MainActivity extends AppCompatActivity {
             String previousStartTimes = sharedPreferences.getString(KEY_STARTTIME, "Huh?");
             String previousEndTimes = sharedPreferences.getString(KEY_ENDTIME, "Huh?");
             String previousTasks = sharedPreferences.getString(KEY_TASK, "Huh?");
+            String previousAlarms = sharedPreferences.getString(KEY_ALARM, "Huh?");
 
             taskStartTimes = previousStartTimes.split(",");
             taskEndTimes = previousEndTimes.split(",");
             taskTasks = previousTasks.split(",");
+            taskAlarm = previousAlarms.split(",");
             String oldEndTimes = "";
             String oldStartTimes = "";
             String oldTasks = "";
+            String oldAlarms = "";
 
             if(!previousStartTimes.equals("Huh?")) {
 
                 for (int i = 0; i < taskStartTimes.length; i++) {
                     //splits 00:00:00 to hour, minute, seconds
                     String[] sections = taskStartTimes[i].split(":");
-                    if (minute > Integer.parseInt(sections[1])) {
-                        if (hour >= Integer.parseInt(sections[0])) {
+                    if (hour > Integer.parseInt(sections[0]) || (hour == Integer.parseInt(sections[0])
+                            && minute > Integer.parseInt(sections[1]))) {
                             if(i == 0) {
                                 oldStartTimes += taskStartTimes[i];
                                 oldEndTimes += taskEndTimes[i];
                                 oldTasks += taskTasks[i];
+                                oldAlarms += taskAlarm[i];
                             } else {
                                 oldStartTimes += "," + taskStartTimes[i];
                                 oldEndTimes += "," + taskEndTimes[i];
                                 oldTasks += "," + taskTasks[i];
+                                oldAlarms += "," + taskAlarm[i];
                             }
-                        }
                     }
                 }
                 count = 0;
             }
 
             if(!newTasks.equals("") && !oldTasks.equals("")) {
-                oldTasks += "," + newTasks;
-                oldStartTimes += "," + newStartTimes;
-                oldEndTimes += "," + newEndTimes;
+
+                oldTasks += newTasks;
+                oldStartTimes += newStartTimes;
+                oldEndTimes += newEndTimes;
+                oldAlarms += newAlarm;
 
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(KEY_TASK, oldTasks);
                 editor.putString(KEY_STARTTIME, oldStartTimes);
                 editor.putString(KEY_ENDTIME, oldEndTimes);
+                editor.putString(KEY_ALARM, oldAlarms);
                 editor.commit();
             }
 

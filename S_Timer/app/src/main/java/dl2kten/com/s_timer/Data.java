@@ -201,7 +201,7 @@ public class Data {
      * @return
      */
     public String authenticate(String email, String password) {
-        requesturl ="http://comp4900group23.000webhostapp.com/user/"
+        requesturl ="http://comp4900group23.000webhostapp.com/childAuth/"
                 + email + "/" + password;
 
         OkHttpClient client = new OkHttpClient();
