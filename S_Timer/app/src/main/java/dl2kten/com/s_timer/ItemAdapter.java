@@ -2,7 +2,6 @@ package dl2kten.com.s_timer;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,15 +99,13 @@ public class ItemAdapter extends BaseAdapter {
         //Happened when app froze and restarted main_activity showed if task was finished running
         if(running.equals("Huh?") || running.equals("false")) {
             if (initiated[position]) {
-                v.setBackgroundColor(Color.RED);
+                v.setBackgroundColor(context.getResources().getColor(R.color.item));
             } else {
-                v.setBackgroundColor(Color.GREEN);
+                v.setBackgroundColor(context.getResources().getColor(R.color.primaryoffset));
             }
         } else {
             if(position == Integer.parseInt(running)) {
-                v.setBackgroundColor(Color.YELLOW);
-            } else {
-                v.setBackgroundColor(Color.RED);
+                v.setBackgroundColor(context.getResources().getColor(R.color.pressedOffset));
             }
         }
 
